@@ -1,0 +1,9 @@
+[package]
+name = "autorand"
+version = "0.1.0"
+authors = ["Mike Lubinets <public@mersinvald.me>"]
+edition = "2018"
+
+[dependencies]
+rand = "0.6"
+autorand-derive = { version = "0.1", path = "./autorand-derive" }
