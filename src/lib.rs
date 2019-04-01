@@ -2,7 +2,7 @@ pub use autorand_derive::Random;
 pub use rand;
 
 use std::collections::{HashMap, BTreeMap, HashSet, BTreeSet, VecDeque, LinkedList};
-use std::hash::Hash;
+use std::hash::{Hash, BuildHasher};
 
 use rand::{Rng, distributions::Alphanumeric};
 
@@ -24,7 +24,6 @@ impl Random for String {
     fn random() -> Self {
         let length = rand::random::<u8>() as usize;
         (0..)
-            .into_iter()
             .map(|_| rand::thread_rng().sample(Alphanumeric))
             .take(length)
             .collect()
@@ -37,7 +36,7 @@ impl<T: Random> Random for Vec<T> {
     }
 }
 
-impl<K: Random + Eq + Hash, V: Random> Random for HashMap<K, V> {
+impl<K: Random + Eq + Hash, V: Random, S: BuildHasher + Default> Random for HashMap<K, V, S> {
     fn random() -> Self {
         rand_length_iter::<(K, V)>().collect()
     }
@@ -49,7 +48,7 @@ impl<K: Random + Ord, V: Random> Random for BTreeMap<K, V> {
     }
 }
 
-impl<T: Random + Eq + Hash> Random for HashSet<T> {
+impl<T: Random + Eq + Hash, S: BuildHasher + Default> Random for HashSet<T, S> {
     fn random() -> Self {
         rand_length_iter().collect()
     }
@@ -79,7 +78,7 @@ fn rand_length_iter<T: Random>() -> impl Iterator<Item=T> {
 }
 
 fn rand_iter<T: Random>() -> impl Iterator<Item=T> {
-    (0..).into_iter().map(|_| T::random())
+    (0..).map(|_| T::random())
 }
 
 macro_rules! impl_primitives {
@@ -108,11 +107,13 @@ macro_rules! impl_arrays {
         $(
         impl<T: Random> Random for [T; $s] {
             fn random() -> Self {
-                let mut array: [T; $s] = unsafe { std::mem::uninitialized() };
-                for i in 0..$s {
-                    array[i] = T::random();
+                unsafe {
+                    let mut array: [T; $s] = std::mem::uninitialized();
+                    for i in 0..$s {
+                        std::ptr::write(&mut array[i], T::random());
+                    }
+                    array
                 }
-                array
             }
         }
         )*

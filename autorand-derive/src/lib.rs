@@ -2,10 +2,9 @@
 extern crate quote;
 extern crate proc_macro;
 
-use std::iter::FromIterator;
 use quote::ToTokens;
 use proc_macro::TokenStream;
-use syn::{Ident, WhereClause, TypeParam, Data, DataStruct, DataEnum, Fields, Field};
+use syn::{Ident, WhereClause, Data, DataStruct, DataEnum, Fields, Field};
 
 #[proc_macro_derive(Random)]
 pub fn random(input: TokenStream) -> TokenStream {
@@ -21,7 +20,7 @@ pub fn random(input: TokenStream) -> TokenStream {
 
 fn impl_random(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
     let name = &ast.ident;
-    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
+    let (impl_generics, ty_generics, ..) = ast.generics.split_for_impl();
     let type_params: Vec<Ident> = ast.generics.type_params()
         .map(|t| t.ident.clone())
         .collect();
@@ -42,7 +41,7 @@ fn impl_random(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
 
     let body = match ast.data {
         Data::Struct(ref data) => expand_struct_random_body(data),
-        Data::Enum(ref data) => expand_enum_random_body(data),
+        Data::Enum(ref data) => expand_enum_random_body(name, data),
         Data::Union(_) => panic!("Random derive is not supported for Union types"),
     };
 
@@ -84,7 +83,7 @@ fn expand_named_fields<'a>(fields: impl Iterator<Item = &'a Field> + 'a) -> impl
     })
 }
 
-fn expand_enum_random_body(data: &DataEnum) -> proc_macro2::TokenStream {
+fn expand_enum_random_body(enum_name: &Ident, data: &DataEnum) -> proc_macro2::TokenStream {
     let constructors = data.variants.iter()
         .map(|v| {
             let name = &v.ident;
@@ -92,17 +91,17 @@ fn expand_enum_random_body(data: &DataEnum) -> proc_macro2::TokenStream {
                 Fields::Named(fields) => {
                     let fields = expand_named_fields(fields.named.iter());
                     quote!(
-                        Self::#name { #(#fields),* }
+                        #enum_name::#name { #(#fields),* }
                     )
                 },
                 Fields::Unnamed(fields) => {
                     let fields = expand_named_fields(fields.unnamed.iter());
                     quote!(
-                        Self::#name ( #(#fields),* )
+                        #enum_name::#name ( #(#fields),* )
                     )
                 },
                 Fields::Unit => {
-                    quote!(Self::#name)
+                    quote!(#enum_name::#name)
                 }
             }
         });
@@ -113,9 +112,10 @@ fn expand_enum_random_body(data: &DataEnum) -> proc_macro2::TokenStream {
     let count = matches.len();
 
     quote!(
-        let variant = autorand::rand::random::<u16>() % #count;
+        let variant = autorand::rand::random::<usize>() % #count;
         match variant {
-            #(#matches),*
+            #(#matches),*,
+            _ => unreachable!(),
         }
     )
 }

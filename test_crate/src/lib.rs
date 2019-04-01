@@ -4,24 +4,31 @@ use std::hash::Hash;
 use std::fmt::{Debug, Display};
 
 #[derive(Random)]
-struct U<A, B: Debug, C> where C: Display {
-    a: A,
-    b: B,
-    c: C,
-    value: [A; 16],
+struct U<T1, T2: Debug, T3> where T3: Display {
+    a: T1,
+    b: T2,
+    c: T3,
+    value: [T1; 16],
 }
 
 #[derive(Random)]
-struct C<A, B: Debug, D> where D: Eq + Hash {
-    a: Vec<A>,
-    b: Vec<B>,
-    d: HashMap<Vec<D>, Vec<HashSet<D>>>,
-    value: (A, B, D)
+struct C<T1, T2: Debug, T3> where T3: Eq + Hash {
+    a: Vec<T1>,
+    b: Vec<T2>,
+    c: HashMap<Vec<T3>, Vec<HashSet<T3>>>,
+    value: (T1, T2, T3)
 }
 
 #[derive(Random)]
-enum E<A, B: Debug, D> where D: Display {
+enum E<T1, T2: Debug, T3> where T3: Display + Eq + Hash {
     A,
-    B { u: U<A, B, D>, c: C<A, B, D>, primitive: char },
-    C(C<A, B, D>)
+    B { u: U<T1, T2, T3>, c: C<T1, T2, T3>, primitive: char },
+    C(C<T1, T2, T3>)
+}
+
+#[test]
+fn generate() {
+    <U<u8, i32, i64>>::random();
+    <C<(i16, i8, u32), [u8; 32], String>>::random();
+    <E<Vec<u8>, char, bool>>::random();
 }
