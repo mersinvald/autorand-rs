@@ -1,10 +1,10 @@
 pub use autorand_derive::Random;
 pub use rand;
 
-use std::collections::{HashMap, BTreeMap, HashSet, BTreeSet, VecDeque, LinkedList};
-use std::hash::{Hash, BuildHasher};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, LinkedList, VecDeque};
+use std::hash::{BuildHasher, Hash};
 
-use rand::{Rng, distributions::Alphanumeric};
+use rand::{distributions::Alphanumeric, Rng};
 
 const LEN_LIMIT: usize = 16;
 
@@ -74,12 +74,12 @@ impl<T: Random> Random for LinkedList<T> {
     }
 }
 
-fn rand_length_iter<T: Random>() -> impl Iterator<Item=T> {
+fn rand_length_iter<T: Random>() -> impl Iterator<Item = T> {
     let length = rand::random::<usize>() % LEN_LIMIT;
     rand_iter().take(length)
 }
 
-fn rand_iter<T: Random>() -> impl Iterator<Item=T> {
+fn rand_iter<T: Random>() -> impl Iterator<Item = T> {
     (0..).map(|_| T::random())
 }
 
@@ -95,6 +95,7 @@ macro_rules! impl_primitives {
     };
 }
 
+#[rustfmt::skip]
 impl_primitives!(
     u8, u16, u32, u64,
     i8, i16, i32, i64,
@@ -122,7 +123,12 @@ macro_rules! impl_arrays {
     };
 }
 
-impl_arrays!(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384,);
+#[rustfmt::skip]
+impl_arrays!(
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32,
+    64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384,
+);
 
 macro_rules! impl_tuples {
     ($([$($t:tt)*],)*) => {
@@ -160,9 +166,7 @@ impl Random for serde_json::Map<String, serde_json::Value> {
 #[cfg(feature = "json")]
 impl Random for serde_json::Number {
     fn random() -> Self {
-        serde_json::Number::from_f64(
-            Random::random()
-        ).unwrap()
+        serde_json::Number::from_f64(Random::random()).unwrap()
     }
 }
 

@@ -2,9 +2,9 @@
 extern crate quote;
 extern crate proc_macro;
 
-use quote::ToTokens;
 use proc_macro::TokenStream;
-use syn::{Ident, WhereClause, Data, DataStruct, DataEnum, Fields, Field};
+use quote::ToTokens;
+use syn::{Data, DataEnum, DataStruct, Field, Fields, Ident, WhereClause};
 
 #[proc_macro_derive(Random)]
 pub fn random(input: TokenStream) -> TokenStream {
@@ -21,15 +21,22 @@ pub fn random(input: TokenStream) -> TokenStream {
 fn impl_random(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
     let name = &ast.ident;
     let (impl_generics, ty_generics, ..) = ast.generics.split_for_impl();
-    let type_params: Vec<Ident> = ast.generics.type_params()
+    let type_params: Vec<Ident> = ast
+        .generics
+        .type_params()
         .map(|t| t.ident.clone())
         .collect();
 
-
     let where_clause = if type_params.is_empty() {
-        ast.generics.where_clause.clone().map(WhereClause::into_token_stream)
+        ast.generics
+            .where_clause
+            .clone()
+            .map(WhereClause::into_token_stream)
     } else {
-        let mut where_clause = ast.generics.where_clause.clone()
+        let mut where_clause = ast
+            .generics
+            .where_clause
+            .clone()
             .map(|x| quote!(#x,))
             .unwrap_or_else(|| quote!(where ));
         let generic_bounds = quote!(
@@ -67,7 +74,9 @@ fn expand_struct_random_body(data: &DataStruct) -> proc_macro2::TokenStream {
     )
 }
 
-fn expand_named_fields<'a>(fields: impl Iterator<Item = &'a Field> + 'a) -> impl Iterator<Item = impl ToTokens> + 'a {
+fn expand_named_fields<'a>(
+    fields: impl Iterator<Item = &'a Field> + 'a,
+) -> impl Iterator<Item = impl ToTokens> + 'a {
     fields.map(|f| {
         let name = &f.ident;
         let ty = &f.ty;
@@ -84,29 +93,27 @@ fn expand_named_fields<'a>(fields: impl Iterator<Item = &'a Field> + 'a) -> impl
 }
 
 fn expand_enum_random_body(enum_name: &Ident, data: &DataEnum) -> proc_macro2::TokenStream {
-    let constructors = data.variants.iter()
-        .map(|v| {
-            let name = &v.ident;
-            match &v.fields {
-                Fields::Named(fields) => {
-                    let fields = expand_named_fields(fields.named.iter());
-                    quote!(
-                        #enum_name::#name { #(#fields),* }
-                    )
-                },
-                Fields::Unnamed(fields) => {
-                    let fields = expand_named_fields(fields.unnamed.iter());
-                    quote!(
-                        #enum_name::#name ( #(#fields),* )
-                    )
-                },
-                Fields::Unit => {
-                    quote!(#enum_name::#name)
-                }
+    let constructors = data.variants.iter().map(|v| {
+        let name = &v.ident;
+        match &v.fields {
+            Fields::Named(fields) => {
+                let fields = expand_named_fields(fields.named.iter());
+                quote!(
+                    #enum_name::#name { #(#fields),* }
+                )
             }
-        });
+            Fields::Unnamed(fields) => {
+                let fields = expand_named_fields(fields.unnamed.iter());
+                quote!(
+                    #enum_name::#name ( #(#fields),* )
+                )
+            }
+            Fields::Unit => quote!(#enum_name::#name),
+        }
+    });
 
-    let matches = constructors.enumerate()
+    let matches = constructors
+        .enumerate()
         .map(|(i, c)| quote!(#i => #c))
         .collect::<Vec<_>>();
     let count = matches.len();
