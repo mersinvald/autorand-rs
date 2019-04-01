@@ -6,6 +6,8 @@ use std::hash::{Hash, BuildHasher};
 
 use rand::{Rng, distributions::Alphanumeric};
 
+const LEN_LIMIT: usize = 16;
+
 pub trait Random: Sized {
     fn random() -> Self;
 }
@@ -22,7 +24,7 @@ impl<T: Random> Random for Option<T> {
 
 impl Random for String {
     fn random() -> Self {
-        let length = rand::random::<u8>() as usize;
+        let length = rand::random::<usize>() % LEN_LIMIT;
         (0..)
             .map(|_| rand::thread_rng().sample(Alphanumeric))
             .take(length)
@@ -73,7 +75,7 @@ impl<T: Random> Random for LinkedList<T> {
 }
 
 fn rand_length_iter<T: Random>() -> impl Iterator<Item=T> {
-    let length = rand::random::<u8>() as usize;
+    let length = rand::random::<usize>() % LEN_LIMIT;
     rand_iter().take(length)
 }
 
