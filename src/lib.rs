@@ -149,3 +149,46 @@ impl_tuples!(
     [A B C D E F G H I J],
     [A B C D E F G H I J K],
 );
+
+#[cfg(feature = "json")]
+impl Random for serde_json::Map<String, serde_json::Value> {
+    fn random() -> Self {
+        rand_length_iter().collect()
+    }
+}
+
+#[cfg(feature = "json")]
+impl Random for serde_json::Number {
+    fn random() -> Self {
+        serde_json::Number::from_f64(
+            Random::random()
+        ).unwrap()
+    }
+}
+
+#[cfg(feature = "json")]
+#[cfg(not(feature = "json-value-always-null"))]
+impl Random for serde_json::Value {
+    fn random() -> Self {
+        use serde_json::Value;
+        let variant = rand::random::<u8>() % 6;
+        match variant {
+            0 => Value::Number(Random::random()),
+            1 => Value::Bool(Random::random()),
+            2 => Value::String(Random::random()),
+            3 => Value::Array(Random::random()),
+            4 => Value::Null,
+            5 => Value::Object(Random::random()),
+            _ => unreachable!(),
+        }
+    }
+}
+
+#[cfg(feature = "json")]
+#[cfg(feature = "json-value-always-null")]
+impl Random for serde_json::Value {
+    fn random() -> Self {
+        use serde_json::Value;
+        Value::Null
+    }
+}
