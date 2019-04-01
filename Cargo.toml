@@ -1,6 +1,6 @@
 [package]
 name = "autorand"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Mike Lubinets <public@mersinvald.me>"]
 description = "Automatic random generation for any struct or enum. Make your fuzzing easier!"
 repository = "https://github.com/mersinvald/autorand-rs"
@@ -9,7 +9,7 @@ edition = "2018"
 
 [dependencies]
 rand = "0.6"
-autorand-derive = { version = "0.1", path = "./autorand-derive" }
+autorand-derive = { version = "0.2", path = "./autorand-derive" }
 serde_json = { version = "1.0", optional = true }
 
 [features]
