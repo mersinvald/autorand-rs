@@ -33,17 +33,17 @@ fn impl_random(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
             .clone()
             .map(WhereClause::into_token_stream)
     } else {
-        let mut where_clause = ast
-            .generics
-            .where_clause
-            .clone()
-            .map(|x| quote!(#x,))
-            .unwrap_or_else(|| quote!(where ));
-        let generic_bounds = quote!(
-           #(#type_params: autorand::Random),*
-        );
-        generic_bounds.to_tokens(&mut where_clause);
-        Some(where_clause)
+        let where_clause = ast.generics.where_clause.as_ref();
+        if let Some(where_clause) = where_clause {
+            let predicates = &where_clause.predicates;
+            Some(quote!(
+                where #(#predicates,)* #(#type_params: autorand::Random,)*
+            ))
+        } else {
+            Some(quote!(
+                where #(#type_params: autorand::Random,)*
+            ))
+        }
     };
 
     let body = match ast.data {
