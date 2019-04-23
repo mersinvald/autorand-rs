@@ -1,6 +1,6 @@
 [package]
 name = "autorand"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Mike Lubinets <public@mersinvald.me>"]
 description = "Automatic random generation for any struct or enum. Make your fuzzing easier!"
 repository = "https://github.com/mersinvald/autorand-rs"
