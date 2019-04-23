@@ -83,6 +83,20 @@ fn rand_iter<T: Random>() -> impl Iterator<Item = T> {
     (0..).map(|_| T::random())
 }
 
+impl Random for f32 {
+    fn random() -> Self {
+        let base = rand::random::<f32>();
+        (base * 1000.0).ceil() / 1000.0
+    }
+}
+
+impl Random for f64 {
+    fn random() -> Self {
+        let base = rand::random::<f64>();
+        (base * 1000.0).ceil() / 1000.0
+    }
+}
+
 macro_rules! impl_primitives {
     ($($t:ty,)*) => {
         $(
@@ -99,11 +113,12 @@ macro_rules! impl_primitives {
 impl_primitives!(
     u8, u16, u32, u64,
     i8, i16, i32, i64,
-    f32, f64,
     usize, isize,
     char,
     bool,
 );
+
+
 
 macro_rules! impl_arrays {
     ($($s:expr,)*) => {
