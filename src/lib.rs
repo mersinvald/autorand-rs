@@ -24,9 +24,9 @@ impl<T: Random> Random for Option<T> {
 
 impl Random for String {
     fn random() -> Self {
-        let length = rand::random::<usize>() % LEN_LIMIT;
-        (0..)
-            .map(|_| rand::thread_rng().sample(Alphanumeric))
+        let mut rng = rand::thread_rng();
+        let length = rng.gen_range(0, LEN_LIMIT);
+        rng.sample_iter(&Alphanumeric)
             .take(length)
             .collect()
     }
@@ -75,7 +75,7 @@ impl<T: Random> Random for LinkedList<T> {
 }
 
 fn rand_length_iter<T: Random>() -> impl Iterator<Item = T> {
-    let length = rand::random::<usize>() % LEN_LIMIT;
+    let length = rand::thread_rng().gen_range(0, LEN_LIMIT);
     rand_iter().take(length)
 }
 
@@ -175,7 +175,7 @@ impl Random for serde_json::Number {
 impl Random for serde_json::Value {
     fn random() -> Self {
         use serde_json::Value;
-        let variant = rand::random::<u8>() % 6;
+        let variant = rand::thread_rng().gen_range(0u8, 6);
         match variant {
             0 => Value::Number(Random::random()),
             1 => Value::Bool(Random::random()),
