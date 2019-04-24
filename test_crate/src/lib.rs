@@ -1,10 +1,12 @@
-use serde::{Serialize, Deserialize};
 use autorand::Random;
+use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
-use serde::de::DeserializeOwned;
 
+// Formatting skipped because lack of trailing comma in the where-clause is a test-case
+#[rustfmt::skip]
 #[derive(Random)]
 struct U<T1, T2: Debug, T3>
 where
@@ -49,7 +51,8 @@ fn generate() {
 }
 
 fn test_transcode<N>(n: N, rounds: usize)
-    where N: Random + Serialize + DeserializeOwned + PartialEq + Debug
+where
+    N: Random + Serialize + DeserializeOwned + PartialEq + Debug,
 {
     for _ in 0..rounds {
         let n_json = serde_json::to_string(&n).unwrap();
