@@ -26,9 +26,7 @@ impl Random for String {
     fn random() -> Self {
         let mut rng = rand::thread_rng();
         let length = rng.gen_range(0, LEN_LIMIT);
-        rng.sample_iter(&Alphanumeric)
-            .take(length)
-            .collect()
+        rng.sample_iter(&Alphanumeric).take(length).collect()
     }
 }
 
@@ -117,8 +115,6 @@ impl_primitives!(
     char,
     bool,
 );
-
-
 
 macro_rules! impl_arrays {
     ($($s:expr,)*) => {
