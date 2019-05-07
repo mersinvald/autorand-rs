@@ -57,8 +57,11 @@ where
     for _ in 0..rounds {
         let n = N::random();
         let n_json = serde_json::to_string(&n).unwrap();
+        let n_value = serde_json::to_value(&n).unwrap();
         let n_dec = serde_json::from_str(&n_json).unwrap();
+        let n_dec_value = serde_json::from_value(n_value).unwrap();
         assert_eq!(n, n_dec);
+        assert_eq!(n, n_dec_value);
     }
 }
 
