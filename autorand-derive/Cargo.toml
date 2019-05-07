@@ -1,6 +1,6 @@
 [package]
 name = "autorand-derive"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Mike Lubinets <public@mersinvald.me>"]
 description = "Custom derive for autorant crate. You don't need to use this crate directly."
 repository = "https://github.com/mersinvald/autorand-rs"
