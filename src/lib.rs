@@ -8,11 +8,8 @@ use rand::{distributions::Alphanumeric, Rng};
 
 const LEN_LIMIT: usize = 16;
 
-#[cfg(feature = "limited-integers")]
 const UINT_LIMIT: usize = u16::max_value() as usize;
-#[cfg(feature = "limited-integers")]
 const INT_LOWER_LIMIT: isize = 0 - (UINT_LIMIT as isize);
-#[cfg(feature = "limited-integers")]
 const INT_UPPER_LIMIT: isize = UINT_LIMIT as isize;
 
 pub trait Random: Sized {
