@@ -16,6 +16,7 @@ serde_json = { version = "1.0", optional = true }
 default = []
 json = ["serde_json"]
 json-value-always-null = ["json"]
+limited-integers = []
 
 [workspace]
 members = [

@@ -8,6 +8,10 @@ use rand::{distributions::Alphanumeric, Rng};
 
 const LEN_LIMIT: usize = 16;
 
+const UINT_LIMIT: usize = u16::max_value() as usize;
+const INT_LOWER_LIMIT: isize = 0 - (UINT_LIMIT as isize);
+const INT_UPPER_LIMIT: isize = UINT_LIMIT as isize;
+
 pub trait Random: Sized {
     fn random() -> Self;
 }
@@ -95,12 +99,34 @@ impl Random for f64 {
     }
 }
 
-macro_rules! impl_primitives {
-    ($($t:ty,)*) => {
+macro_rules! impl_primitives_unsigned {
+    ($($t:tt,)*) => {
         $(
         impl Random for $t {
             fn random() -> Self {
-                rand::random()
+                let mut rng = rand::thread_rng();
+                if cfg!(not(feature = "limited-integers")) || ($t::max_value() as usize) < UINT_LIMIT {
+                    rng.gen_range(0, $t::max_value())
+                } else {
+                    rng.gen_range(0, UINT_LIMIT as $t)
+                }
+            }
+        }
+        )*
+    };
+}
+
+macro_rules! impl_primitives_signed {
+    ($($t:tt,)*) => {
+        $(
+        impl Random for $t {
+            fn random() -> Self {
+                let mut rng = rand::thread_rng();
+                if cfg!(not(feature = "limited-integers")) || ($t::max_value() as isize) < INT_UPPER_LIMIT {
+                    rng.gen_range($t::min_value(), $t::max_value())
+                } else {
+                    rng.gen_range(INT_LOWER_LIMIT as $t, INT_UPPER_LIMIT as $t)
+                }
             }
         }
         )*
@@ -108,13 +134,25 @@ macro_rules! impl_primitives {
 }
 
 #[rustfmt::skip]
-impl_primitives!(
-    u8, u16, u32, u64,
-    i8, i16, i32, i64,
-    usize, isize,
-    char,
-    bool,
-);
+impl_primitives_signed! {
+    i8, i16, i32, i64, isize,
+}
+
+impl_primitives_unsigned! {
+    u8, u16, u32, u64, usize,
+}
+
+impl Random for char {
+    fn random() -> Self {
+        rand::random()
+    }
+}
+
+impl Random for bool {
+    fn random() -> Self {
+        rand::random()
+    }
+}
 
 macro_rules! impl_arrays {
     ($($s:expr,)*) => {

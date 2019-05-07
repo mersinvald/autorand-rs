@@ -50,25 +50,29 @@ fn generate() {
     <E<Vec<u8>, char, bool>>::random();
 }
 
-fn test_transcode<N>(n: N, rounds: usize)
+fn test_transcode<N>(rounds: usize)
 where
     N: Random + Serialize + DeserializeOwned + PartialEq + Debug,
 {
     for _ in 0..rounds {
+        let n = N::random();
         let n_json = serde_json::to_string(&n).unwrap();
+        let n_value = serde_json::to_value(&n).unwrap();
         let n_dec = serde_json::from_str(&n_json).unwrap();
+        let n_dec_value = serde_json::from_value(n_value).unwrap();
         assert_eq!(n, n_dec);
+        assert_eq!(n, n_dec_value);
     }
 }
 
 #[test]
 fn transcode_float_serde_json() {
-    test_transcode(f32::random(), 10000);
-    test_transcode(f64::random(), 10000);
+    test_transcode::<f32>( 100000);
+    test_transcode::<f64>(100000);
 }
 
 #[test]
 fn transcode_vec_float_serde_json() {
-    test_transcode(Vec::<f32>::random(), 1000);
-    test_transcode(Vec::<f64>::random(), 1000);
+    test_transcode::<Vec<f32>>(10000);
+    test_transcode::<Vec<f64>>(10000);
 }

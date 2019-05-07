@@ -4,3 +4,4 @@ set -x
 
 source $HOME/.cargo/env
 cargo $@ test --all
+cargo $@ test --all --features limited-integers
