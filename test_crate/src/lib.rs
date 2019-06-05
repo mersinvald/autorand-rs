@@ -67,7 +67,7 @@ where
 
 #[test]
 fn transcode_float_serde_json() {
-    test_transcode::<f32>( 100000);
+    test_transcode::<f32>(100000);
     test_transcode::<f64>(100000);
 }
 
