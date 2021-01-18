@@ -159,12 +159,16 @@ macro_rules! impl_arrays {
         $(
         impl<T: Random> Random for [T; $s] {
             fn random() -> Self {
+                use std::mem::{MaybeUninit, transmute_copy, size_of};
                 unsafe {
-                    let mut array: [T; $s] = std::mem::uninitialized();
-                    for i in 0..$s {
-                        std::ptr::write(&mut array[i], T::random());
+                    let mut array: [MaybeUninit<T>; $s] = MaybeUninit::uninit().assume_init();
+                    for elem in &mut array[..] {
+                        *elem = MaybeUninit::new(T::random());
                     }
-                    array
+
+                    // See https://github.com/rust-lang/rust/issues/47966
+                    debug_assert!(size_of::<[MaybeUninit<T>; $s]>() == size_of::<[T; $s]>());
+                    transmute_copy::<_, [T; $s]>(&array)
                 }
             }
         }
